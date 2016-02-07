@@ -9,4 +9,5 @@
     <string name="query_location">02458,us</string>
     <string name="query_units">metric</string>
     <string name="query_number_days">7</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>

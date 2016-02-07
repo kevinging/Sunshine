@@ -1,7 +1,9 @@
 package com.kevinging.sunshine;
 
+import android.annotation.TargetApi;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
@@ -12,8 +14,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,26 +74,43 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         List<String> forecast = new ArrayList<>();
-        forecast.add("Today - Sunny - 88/63");
-        forecast.add("Tomorrow - Foggy - 70/46");
-        forecast.add("Weds - Cloudy - 72/63");
-        forecast.add("Thurs - Rainy - 64/51");
-        forecast.add("Fri - Cloudy - 70/46");
-        forecast.add("Sat - Sunny - 76/68");
+//        forecast.add("Today - Sunny - 88/63");
+//        forecast.add("Tomorrow - Foggy - 70/46");
+//        forecast.add("Weds - Cloudy - 72/63");
+//        forecast.add("Thurs - Rainy - 64/51");
+//        forecast.add("Fri - Cloudy - 70/46");
+//        forecast.add("Sat - Sunny - 76/68");
 
         forecastAdapter = new ArrayAdapter(getContext(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, forecast);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        final ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(forecastAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String weather = (String) listView.getItemAtPosition(position);
+                Toast.makeText(getContext(), weather, Toast.LENGTH_LONG).show();
+            }
+        });
 
         return rootView;
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+
+        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+        @Override
+        protected void onPostExecute(String[] strings) {
+            if(strings != null) {
+                forecastAdapter.clear();
+                forecastAdapter.addAll(strings);
+            }
+        }
 
         @Override
         protected String[] doInBackground(String... params) {
@@ -107,7 +128,7 @@ public class ForecastFragment extends Fragment {
                         .appendQueryParameter(ID, params[0])
                         .appendQueryParameter(MODE, "json")
                         .appendQueryParameter(DAYS, "7")
-                        .appendQueryParameter(UNITS, "metric")
+                        .appendQueryParameter(UNITS, "imperial")
                         .appendQueryParameter(KEY, "44db6a862fba0b067b1930da0d769e98")
                         .build();
 
@@ -207,11 +228,11 @@ public class ForecastFragment extends Fragment {
 
         // These are the names of the JSON objects that need to be extracted.
         final String OWM_LIST = "list";
+        final String OWM_DESCRIPTION = "main";
         final String OWM_WEATHER = "weather";
         final String OWM_TEMPERATURE = "temp";
-        final String OWM_MAX = "max";
-        final String OWM_MIN = "min";
-        final String OWM_DESCRIPTION = "main";
+        final String OWM_MAX = "temp_max";
+        final String OWM_MIN = "temp_min";
 
         JSONObject forecastJson = new JSONObject(forecastJsonStr);
         JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
@@ -255,11 +276,13 @@ public class ForecastFragment extends Fragment {
             JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
             description = weatherObject.getString(OWM_DESCRIPTION);
 
+            JSONObject mainObject = dayForecast.getJSONObject(OWM_DESCRIPTION);
+
             // Temperatures are in a child object called "temp".  Try not to name variables
             // "temp" when working with temperature.  It confuses everybody.
-            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
-            double high = temperatureObject.getDouble(OWM_MAX);
-            double low = temperatureObject.getDouble(OWM_MIN);
+            double temp = mainObject.getDouble(OWM_TEMPERATURE);
+            double high = mainObject.getDouble(OWM_MAX);
+            double low = mainObject.getDouble(OWM_MIN);
 
             highAndLow = formatHighLows(high, low);
             resultStrs[i] = day + " - " + description + " - " + highAndLow;
