@@ -40,7 +40,7 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
 
     ArrayAdapter forecastAdapter;
-    final static String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?";
+    final static String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast";
     final static String QUERY = "q";
     final static String ID = "id";
     final static String MODE = "json";
