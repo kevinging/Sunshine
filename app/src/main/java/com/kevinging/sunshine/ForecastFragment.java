@@ -1,6 +1,7 @@
 package com.kevinging.sunshine;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -39,14 +40,14 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
 
     ArrayAdapter forecastAdapter;
-    final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?";
-    final String QUERY = "q";
-    final String ID = "id";
-    final String MODE = "json";
-    final String UNITS = "units";
-    final String DAYS = "cnt";
-    final String KEY = "appid";
-
+    final static String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?";
+    final static String QUERY = "q";
+    final static String ID = "id";
+    final static String MODE = "json";
+    final static String UNITS = "units";
+    final static String DAYS = "cnt";
+    final static String KEY = "appid";
+    final static String APPID_PARAM = "APPID";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,15 +78,7 @@ public class ForecastFragment extends Fragment {
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        List<String> forecast = new ArrayList<>();
-//        forecast.add("Today - Sunny - 88/63");
-//        forecast.add("Tomorrow - Foggy - 70/46");
-//        forecast.add("Weds - Cloudy - 72/63");
-//        forecast.add("Thurs - Rainy - 64/51");
-//        forecast.add("Fri - Cloudy - 70/46");
-//        forecast.add("Sat - Sunny - 76/68");
-
-        forecastAdapter = new ArrayAdapter(getContext(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, forecast);
+        forecastAdapter = new ArrayAdapter(getContext(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, new ArrayList<>());
 
         final ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(forecastAdapter);
@@ -95,6 +88,10 @@ public class ForecastFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String weather = (String) listView.getItemAtPosition(position);
                 Toast.makeText(getContext(), weather, Toast.LENGTH_LONG).show();
+
+                Intent detail = new Intent(getContext(), DetailActivity.class);
+                detail.putExtra(Intent.EXTRA_TEXT, weather);
+                startActivity(detail);
             }
         });
 
@@ -129,6 +126,7 @@ public class ForecastFragment extends Fragment {
                         .appendQueryParameter(MODE, "json")
                         .appendQueryParameter(DAYS, "7")
                         .appendQueryParameter(UNITS, "imperial")
+                        // .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
                         .appendQueryParameter(KEY, "44db6a862fba0b067b1930da0d769e98")
                         .build();
 
